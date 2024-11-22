@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -12,15 +11,10 @@ import (
 
 func TokenAuth(c *gin.Context) {
 	key := c.Request.Header.Get("Authorization")
-	key = strings.TrimPrefix(
-		strings.TrimPrefix(key, "Bearer "),
-		"sk-",
-	)
-	parts := strings.Split(key, "-")
-	key = parts[0]
 	if err := parseToken(key); err != nil {
 		slog.Error("Failed to parse token", "Error", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"msg": "Invalid token"})
+		c.Abort()
 		return
 	}
 	c.Next()
